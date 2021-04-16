@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar  25 2021
+
+@author: chaseslater
+"""
+
+"""Import Libraries"""
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.signal
+import Lab2FunctionsNoPlot as l2f
+
+%matplotlib qt
+
+column_names = [
+    "ecg",
+    "t"
+]
+
+Control = pd.read_csv("Chase_ECG_Control.txt",
+    names = column_names, sep = '\t', skiprows = 500, skipfooter = 500, engine = 'python')
+
+Test1 = pd.read_csv("Chase_ECG_Test_1_Fixed.txt",
+    names = column_names, sep = '\t', skiprows = 500, skipfooter = 500, engine = 'python')
+
+Test2 = pd.read_csv("Chase_ECG_Test_2.txt",
+    names = column_names, sep = '\t', skiprows = 500, skipfooter = 500, engine = 'python')
+
+Control.t = Control.t/1000
+Test1.t = Test1.t/1000   
+Test2.t = Test2.t/1000
+
+ControlPre = Control[1:75000]
+ControlDuring = Control[75001:240000]
+ControlAfter = Control[240001:299237]
+
+Test1Pre = Test1[1:75000]
+Test1During = Test1[75001:240000]
+Test1After = Test1[240001:296832]
+
+Test2Pre = Test2[1:75000]
+Test2During = Test2[75001:240000]
+Test2After = Test2[240001:301412]
+
+ControlPre = ControlPre.reset_index(drop = True)
+ControlDuring = ControlDuring.reset_index(drop = True)
+ControlAfter = ControlAfter.reset_index(drop = True)
+Test1Pre = Test1Pre.reset_index(drop = True)
+Test1During = Test1During.reset_index(drop = True)
+Test1After = Test1After.reset_index(drop = True)
+Test2Pre = Test2Pre.reset_index(drop = True)
+Test2During = Test2During.reset_index(drop = True)
+Test2After = Test2After.reset_index(drop = True)
+
+# Filter
+ 
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_ControlPre = scipy.signal.filtfilt(b, a, ControlPre.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_ControlDuring = scipy.signal.filtfilt(b, a, ControlDuring.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_ControlAfter = scipy.signal.filtfilt(b, a, ControlAfter.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test1Pre = scipy.signal.filtfilt(b, a, Test1Pre.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test1During = scipy.signal.filtfilt(b, a, Test1During.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test1After = scipy.signal.filtfilt(b, a, Test1After.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test2Pre = scipy.signal.filtfilt(b, a, Test2Pre.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test2During = scipy.signal.filtfilt(b, a, Test2During.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test2After = scipy.signal.filtfilt(b, a, Test2After.ecg)
+
+# Calculate Peaks
+
+peaks,_ = scipy.signal.find_peaks(filt_ControlPre, height = 345)
+peaks1,_ = scipy.signal.find_peaks(filt_ControlDuring, height = 345)
+peaks2,_ = scipy.signal.find_peaks(filt_ControlAfter, height = 345)
+peaks3,_ = scipy.signal.find_peaks(filt_Test1Pre, height = 345)
+peaks4,_ = scipy.signal.find_peaks(filt_Test1During, height = 345)
+peaks5,_ = scipy.signal.find_peaks(filt_Test1After, height = 345)
+peaks6,_ = scipy.signal.find_peaks(filt_Test2Pre, height = 345)
+peaks7,_ = scipy.signal.find_peaks(filt_Test2During, height = 345)
+peaks8,_ = scipy.signal.find_peaks(filt_Test2After, height = 345)
+
+# Calculating RR Intervals, Mean HR, Mean HRV
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(ControlPre.ecg, ControlPre.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, ControlPre.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(ControlPre.ecg, d_ecg, Rwave_peaks_d_ecg, ControlPre.t)
+RR_intervalCP = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(ControlDuring.ecg, ControlDuring.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, ControlDuring.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(ControlDuring.ecg, d_ecg, Rwave_peaks_d_ecg, ControlDuring.t)
+RR_intervalCD = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(ControlAfter.ecg, ControlAfter.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, ControlAfter.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(ControlAfter.ecg, d_ecg, Rwave_peaks_d_ecg, ControlAfter.t)
+RR_intervalCA = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test1Pre.ecg, Test1Pre.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test1Pre.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test1Pre.ecg, d_ecg, Rwave_peaks_d_ecg, Test1Pre.t)
+RR_intervalT1P = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test1During.ecg, Test1During.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test1During.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test1During.ecg, d_ecg, Rwave_peaks_d_ecg, Test1During.t)
+RR_intervalT1D = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test1After.ecg, Test1After.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test1After.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test1After.ecg, d_ecg, Rwave_peaks_d_ecg, Test1After.t)
+RR_intervalT1A = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test2Pre.ecg, Test2Pre.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test2Pre.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test2Pre.ecg, d_ecg, Rwave_peaks_d_ecg, Test2Pre.t)
+RR_intervalT2P = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test2During.ecg, Test2During.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test2During.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test2During.ecg, d_ecg, Rwave_peaks_d_ecg, Test2During.t)
+RR_intervalT2D = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test2After.ecg, Test2After.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test2After.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test2After.ecg, d_ecg, Rwave_peaks_d_ecg, Test2After.t)
+RR_intervalT2A = np.diff(restingecg_Rwave_t)
+
+heartrateCP = (1/RR_intervalCP)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateCP = scipy.signal.filtfilt(b2, a2, heartrateCP) 
+heartrateCP_X = l2f.newX_axis(RR_intervalCP) 
+avg = sum(filt_heartrateCP)/len(filt_heartrateCP)
+print("Average Pre Control HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateCP))
+print ('\n')
+
+heartrateCD = (1/RR_intervalCD)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateCD = scipy.signal.filtfilt(b2, a2, heartrateCD) 
+heartrateCD_X = l2f.newX_axis(RR_intervalCD) 
+avg = sum(filt_heartrateCD)/len(filt_heartrateCD)
+print("Average During Control HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateCD))
+print ('\n')
+
+heartrateCA = (1/RR_intervalCA)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateCA = scipy.signal.filtfilt(b2, a2, heartrateCA) 
+heartrateCA_X = l2f.newX_axis(RR_intervalCA) 
+avg = sum(filt_heartrateCA)/len(filt_heartrateCA)
+print("Average After Control HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateCA))
+print ('\n')
+
+heartrateT1P = (1/RR_intervalT1P)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT1P = scipy.signal.filtfilt(b2, a2, heartrateT1P) 
+heartrateT1P_X = l2f.newX_axis(RR_intervalT1P) 
+avg = sum(filt_heartrateT1P)/len(filt_heartrateT1P)
+print("Average Pre Test1 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT1P))
+print ('\n')
+
+heartrateT1D = (1/RR_intervalT1D)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT1D = scipy.signal.filtfilt(b2, a2, heartrateT1D) 
+heartrateT1D_X = l2f.newX_axis(RR_intervalT1D) 
+avg = sum(filt_heartrateT1D)/len(filt_heartrateT1D)
+print("Average During Test1 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT1D))
+print ('\n')
+
+heartrateT1A = (1/RR_intervalT1A)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT1A = scipy.signal.filtfilt(b2, a2, heartrateT1A) 
+heartrateT1A_X = l2f.newX_axis(RR_intervalT1A) 
+avg = sum(filt_heartrateT1A)/len(filt_heartrateT1A)
+print("Average After Test1 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT1A))
+print ('\n')
+
+heartrateT2P = (1/RR_intervalT2P)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT2P = scipy.signal.filtfilt(b2, a2, heartrateT2P) 
+heartrateT2P_X = l2f.newX_axis(RR_intervalT2P) 
+avg = sum(filt_heartrateT2P)/len(filt_heartrateT2P)
+print("Average Pre Test2 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT2P))
+print ('\n')
+
+heartrateT2D = (1/RR_intervalT2D)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT2D = scipy.signal.filtfilt(b2, a2, heartrateT2D) 
+heartrateT2D_X = l2f.newX_axis(RR_intervalT2D) 
+avg = sum(filt_heartrateT2D)/len(filt_heartrateT2D)
+print("Average During Test2 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT2D))
+print ('\n')
+
+heartrateT2A = (1/RR_intervalT2A)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT2A = scipy.signal.filtfilt(b2, a2, heartrateT2A) 
+heartrateT2A_X = l2f.newX_axis(RR_intervalT2A) 
+avg = sum(filt_heartrateT2A)/len(filt_heartrateT2A)
+print("Average After Test2 HR = ", round(avg,2))
+print("Average HRV = ", np.std(filt_heartrateT2A))
+print ('\n')

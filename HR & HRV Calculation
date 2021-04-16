@@ -56,7 +56,16 @@ Test2During = Test2During.reset_index(drop = True)
 Test2After = Test2After.reset_index(drop = True)
 
 # Filter
- 
+
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Control = scipy.signal.filtfilt(b, a, Control.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test1 = scipy.signal.filtfilt(b, a, Test1.ecg)
+Wn = 0.1
+b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
+filt_Test2 = scipy.signal.filtfilt(b, a, Test2.ecg)
 Wn = 0.1
 b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
 filt_ControlPre = scipy.signal.filtfilt(b, a, ControlPre.ecg)
@@ -85,7 +94,7 @@ Wn = 0.1
 b, a = scipy.signal.butter(4, Wn, 'low', analog = False)
 filt_Test2After = scipy.signal.filtfilt(b, a, Test2After.ecg)
 
-# Calculate Peaks
+# Calculate Peaks (Height may need to be adjusted for your data)
 
 peaks,_ = scipy.signal.find_peaks(filt_ControlPre, height = 345)
 peaks1,_ = scipy.signal.find_peaks(filt_ControlDuring, height = 345)
@@ -96,6 +105,9 @@ peaks5,_ = scipy.signal.find_peaks(filt_Test1After, height = 345)
 peaks6,_ = scipy.signal.find_peaks(filt_Test2Pre, height = 345)
 peaks7,_ = scipy.signal.find_peaks(filt_Test2During, height = 345)
 peaks8,_ = scipy.signal.find_peaks(filt_Test2After, height = 345)
+peaks9,_ = scipy.signal.find_peaks(filt_Control, height = 345)
+peaks10,_ = scipy.signal.find_peaks(filt_Test1, height = 345)
+peaks11,_ = scipy.signal.find_peaks(filt_Test2, height = 345)
 
 # Calculating RR Intervals, Mean HR, Mean HRV
 
@@ -143,6 +155,21 @@ d_ecg, peaks_d_ecg = l2f.decg_peaks(Test2After.ecg, Test2After.t)
 Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test2After.t, 0.4, 0.5)
 restingecg_Rwave_t = l2f.Rwave_peaks(Test2After.ecg, d_ecg, Rwave_peaks_d_ecg, Test2After.t)
 RR_intervalT2A = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Control.ecg, Control.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Control.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Control.ecg, d_ecg, Rwave_peaks_d_ecg, Control.t)
+RR_intervalC = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test1.ecg, Test1.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test1.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test1.ecg, d_ecg, Rwave_peaks_d_ecg, Test1.t)
+RR_intervalT1 = np.diff(restingecg_Rwave_t)
+
+d_ecg, peaks_d_ecg = l2f.decg_peaks(Test2.ecg, Test2.t)
+Rwave_peaks_d_ecg = l2f.d_ecg_peaks(d_ecg, peaks_d_ecg, Test2.t, 0.4, 0.5)
+restingecg_Rwave_t = l2f.Rwave_peaks(Test2.ecg, d_ecg, Rwave_peaks_d_ecg, Test2.t)
+RR_intervalT2 = np.diff(restingecg_Rwave_t)
 
 heartrateCP = (1/RR_intervalCP)*60
 Wn = 0.2
@@ -233,6 +260,60 @@ avg = sum(filt_heartrateT2A)/len(filt_heartrateT2A)
 print("Average After Test2 HR = ", round(avg,2))
 print("Average HRV = ", np.std(filt_heartrateT2A))
 print ('\n')
+
+heartrateC = (1/RR_intervalC)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateC = scipy.signal.filtfilt(b2, a2, heartrateC) 
+heartrateC_X = l2f.newX_axis(RR_intervalC) 
+avg = sum(filt_heartrateC)/len(filt_heartrateC)
+print("Average Total Control HR = ", round(avg,2))
+print("Average Total HRV = ", np.std(filt_heartrateC))
+print ('\n')
+
+heartrateT1 = (1/RR_intervalT1)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT1 = scipy.signal.filtfilt(b2, a2, heartrateT1) 
+heartrateT1_X = l2f.newX_axis(RR_intervalT1) 
+avg = sum(filt_heartrateT1)/len(filt_heartrateT1)
+print("Average Total Test1 HR = ", round(avg,2))
+print("Average Total HRV = ", np.std(filt_heartrateT1))
+print ('\n')
+
+heartrateT2 = (1/RR_intervalT2)*60
+Wn = 0.2
+b2, a2 = scipy.signal.butter(4, Wn, 'low', analog = False) #find a good value for Wn
+filt_heartrateT2 = scipy.signal.filtfilt(b2, a2, heartrateT2) 
+heartrateT2_X = l2f.newX_axis(RR_intervalT2) 
+avg = sum(filt_heartrateT2)/len(filt_heartrateT2)
+print("Average Total Test2 HR = ", round(avg,2))
+print("Average Total HRV = ", np.std(filt_heartrateT2))
+print ('\n')
+
+#Plot of Tests vs Control
+
+plt.figure(8)
+plt.show()
+plt.plot(heartrateC_X, filt_heartrateC, color='blue', label='Filtered Control HR')
+plt.plot(heartrateT1_X, filt_heartrateT1, color='green', label='Filtered Test 1 HR')
+plt.title("Filtered Heart Rate During Test 1 and Control")
+plt.xlabel('Time (s)')
+plt.ylabel('Heart Rate (bpm)')
+plt.legend()
+plt.axvline(300, color = 'red')
+plt.axvline(960, color = 'red')
+
+plt.figure(9)
+plt.show()
+plt.plot(heartrateC_X, filt_heartrateC, color='blue', label='Filtered Control HR')
+plt.plot(heartrateT2_X, filt_heartrateT2, color='green', label='Filtered Test 1 HR')
+plt.title("Filtered Heart Rate During Test 2 and Control")
+plt.xlabel('Time (s)')
+plt.ylabel('Heart Rate (bpm)')
+plt.legend()
+plt.axvline(300, color = 'red')
+plt.axvline(960, color = 'red')
 
 #Calculate Peak HR
 

@@ -109,6 +109,32 @@ peaks9,_ = scipy.signal.find_peaks(filt_Control, height = 345)
 peaks10,_ = scipy.signal.find_peaks(filt_Test1, height = 345)
 peaks11,_ = scipy.signal.find_peaks(filt_Test2, height = 345)
 
+#Plot of peaks to see if height is correct
+
+plt.figure(4)
+plt.plot(ControlPre.t, filt_ControlPre, label = 'Filtered ECG')
+plt.plot(ControlPre.t[peaks], filt_ControlPre[peaks], "x", label = 'R-Wave Peak')
+plt.title("Filtered Control ECG Signal with R-Wave Peaks Labelled")
+plt.xlabel("Time (s)")
+plt.ylabel("ECG Amplitude (mV)")
+plt.legend(loc = 'right')
+
+plt.figure(5)
+plt.plot(Test1Pre.t, filt_Test1Pre, label = 'Filtered ECG')
+plt.plot(Test1Pre.t[peaks3], filt_Test1Pre[peaks3], "x", label = 'R-Wave Peak')
+plt.title("Filtered Test 1 ECG Signal with R-Wave Peaks Labelled")
+plt.xlabel("Time (s)")
+plt.ylabel("ECG Amplitude (mV)")
+plt.legend(loc = 'right')
+
+plt.figure(6)
+plt.plot(Test2Pre.t, filt_Test2Pre, label = 'Filtered ECG')
+plt.plot(Test2Pre.t[peaks6], filt_Test2Pre[peaks6], "x", label = 'R-Wave Peak')
+plt.title("Filtered Test 1 ECG Signal with R-Wave Peaks Labelled")
+plt.xlabel("Time (s)")
+plt.ylabel("ECG Amplitude (mV)")
+plt.legend(loc = 'right')
+
 # Calculating RR Intervals, Mean HR, Mean HRV
 
 d_ecg, peaks_d_ecg = l2f.decg_peaks(ControlPre.ecg, ControlPre.t)
